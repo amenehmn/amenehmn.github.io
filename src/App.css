@@ -1,0 +1,165 @@
+@font-face {
+  font-family: 'B-Nazanin';
+  src: local('B-Nazanin'), url(./fonts/BNaznnBd.ttf) format('truetype');
+}
+
+
+.mainContainer {
+/*   max-width:1400px; */
+/*   margin-top: 50px; */
+  padding: 60px;
+}
+
+.title {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  font-size: 32px;
+  font-family: B-Nazanin;
+}
+
+img {
+  margin-right: 15px;
+  margin-left: 15px;
+}
+
+.parag {
+  display: flex;
+  justify-content: center;
+  margin-top: 40px;
+}
+
+.mainParagraph {
+  font-family: Tahoma;
+  box-shadow: 4px 4px 4px 4px gray;
+  padding: 80px;
+  font-size: 18px;
+}
+
+li {
+  margin-right: 50px;
+  margin-top: 25px;
+}
+
+.rinkebyHelp {
+  font-family: B-Nazanin;
+  border: 3px solid black;
+  padding: 15px;
+  margin-top: 30px;
+  border: double;
+}
+
+.btmPosition {
+  display:flex;
+  justify-content: center;
+}
+
+.cta-button {
+  height: 45px;
+  border: 0;
+  width: auto;
+  padding-left: 40px;
+  padding-right: 40px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: bold;
+  color: white;
+  margin-top: 10px;
+  
+}
+
+.connect-wallet-button {
+  background: -webkit-linear-gradient(left,  black, white);
+  background-size: 200% 200%;
+  animation: gradient-animation 4s ease infinite;
+}
+
+.mint-button {
+  background: black;
+  background-size: 200% 200%;
+}
+
+.leftSide {
+  flex: 50%;
+  display: flex;
+/*   justify-content: center; */
+  padding: 32px;
+  box-shadow: 4px 4px 4px gray;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* Main column */
+.rightSide {
+  flex: 50%;
+/*   text-align: right; */
+/*   box-shadow: 4px 4px 4px 4px #d72d2d; */
+  padding: 60px;
+/*   font-size: 40px; */
+  font-family: B-Nazanin;
+  direction: rtl;
+}
+/* .center {
+  flex: 5%;
+} */
+
+/* Responsive layout - when the screen is less than 700px wide, make the two columns stack on top of each other instead of next to each other */
+@media screen and (max-width: 700px) {
+  #sellNFT {  
+    flex-direction: column-reverse;
+  }
+  #randGeneratorContainer {  
+    flex-direction: column;
+  }
+  #auctionContainer {  
+    flex-direction: column-reverse;
+  } 
+  .title {
+    font-size: 18px;
+  }
+  .mainParagraph {
+    font-size: 12px;
+    padding: 12px;
+  }
+  .leftSide {
+    padding: 0px;
+  }
+}
+
+.mintContainer {
+  font-family: B-Nazanin;
+}
+
+
+#sellNFT{
+  display: flex;
+/*   flex-direction: row; */
+  margin-top: 70px;
+}
+
+#openseaTxt {
+  margin-top: 40px;
+}
+
+#randGeneratorContainer {
+  display: flex;
+/*   flex-direction: row; */
+  margin-top: 70px;
+}
+
+#auctionContainer {
+  display: flex;
+/*   flex-direction: row; */
+  margin-top: 70px;
+}
+
+#voteContainer {
+  display: flex;
+  margin-top: 70px; 
+  box-shadow: 4px 4px 4px 4px gray;
+  padding: 32px;
+  direction: rtl;
+/*   font-size: 40px; */
+}
