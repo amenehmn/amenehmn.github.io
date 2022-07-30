@@ -1,11 +1,14 @@
 import React, { useEffect, useState } from "react";
 import './App.css';
 import MyZombieNFT from "./utils/MyZombieNFT.json";
+import SimpleAuction from "./utils/SimpleAuction.json";
 import { ethers } from "ethers";
 
 const TOTAL_MINT_COUNT = 100;
 // I moved the contract address to the top for easy access.
 const CONTRACT_ADDRESS = "0x272D90a1EE1FEA9fFeFA8893FFe4B0f335CAdD00";
+const Auction_CONTRACT_ADDRESS = "0x4f2C172f713FFb8ec6D0f8dD27473788b41a34aB";
+const NFT2_CONTRACT_ADDRESS = "0xA91c3369E4700A34c48884603F723Aed207E2906";
 
 function App() {
 
@@ -137,6 +140,167 @@ function App() {
     }
   }
 
+  /// Auction 
+  const auctionEventListener = async () => {
+    try {
+      const { ethereum } = window;
+
+      if (ethereum) {
+        const provider = new ethers.providers.Web3Provider(ethereum);
+        const signer = provider.getSigner();
+        const aucContract = new ethers.Contract(Auction_CONTRACT_ADDRESS, SimpleAuction.abi, signer);
+
+        // This will essentially "capture" our event when our contract throws it.
+        aucContract.on("HighestBidIncreased", (from, val) => {
+          console.log("Highest Bid Increased")
+          document.getElementById("bidUntilNow").innerHTML = " بالاترین پیشنهاد تا کنون "+ethers.utils.formatEther(val) + 'اتر ';
+          alert(`بالاترین قیمت پیشنهادی به ${ethers.utils.formatEther(val)} اتر افزایش یافت .`)
+        }, {once:true});
+         aucContract.off("HighestBidIncreased", (from, val) => {
+           console.log("Highest Bid Increased")
+           document.getElementById("bidUntilNow").innerHTML = " بالاترین پیشنهاد تا کنون "+ethers.utils.formatEther(val) + 'اتر ';
+          alert(`بالاترین قیمت پیشنهادی به ${ehters.utils.formatEhter(val)} افزایش یافت.`)
+        });
+
+         aucContract.on("AuctionEnded", (highestBidder, highestBid) => {
+          console.log("Auction Ended")
+          document.getElementById("miningTxt").innerHTML =" مزایده با برنده شدن " + highestBidder + " با پیشنهاد " + ethers.utils.formatEther(highestBid) + " اتر پایان یافت."
+        }, {once:true});
+         aucContract.off("AuctionEnded", (highestBidder, highestBid) => {
+           console.log("Auction Ended")
+          document.getElementById("miningTxt").innerHTML ="مزایده با برنده شدن " + highestBidder + "با پیشنهاد" + ethers.utils.formatEther(highestBid) + "اتر پایان یافت."
+        });
+        console.log("Setup event listener!")
+
+      } else {
+        console.log("Ethereum object doesn't exist!");
+      }  
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
+
+  
+    const submitBid = async () => {
+    try {
+      const { ethereum } = window;
+      
+      if (ethereum) {
+
+      let chainId = await ethereum.request({ method: 'eth_chainId' });
+      console.log("Connected to chain " + chainId);
+      
+      // String, hex code of the chainId of the Rinkebey test network
+      const rinkebyChainId = "0x4"; 
+      if (chainId !== rinkebyChainId) {
+      	alert("You are not connected to the Rinkeby Test Network!");
+      }
+        
+        const provider = new ethers.providers.Web3Provider(ethereum);
+        const signer = provider.getSigner();
+        const connectedContract = new ethers.Contract(Auction_CONTRACT_ADDRESS, SimpleAuction.abi, signer);
+
+        try{
+        let bidTxn = await connectedContract.bid({value:  ethers.utils.parseEther(document.getElementById("bid").value), gasLimit: 300000 })
+        console.log("Mining...please wait.")
+        document.getElementById("miningTxt").innerHTML = "...Mining";
+        await bidTxn.wait();
+        auctionEventListener()
+        document.getElementById("miningTxt").innerHTML = "Mined.";
+        console.log(`Mined, see transaction: https://rinkeby.etherscan.io/tx/${bidTxn.hash}`); 
+
+        } catch(err) {
+        document.getElementById("miningTxt").innerHTML = "";
+        alert(`خطا به یکی از دلایل زیر اتفاق افتاده است:
+* پیشنهاد به اندازه کافی بالا نیست.
+* مزایده قبلاً به پایان رسیده است.
+* هیچ مقداری وارد نکرده اید.`)
+        }
+      } else {
+        console.log("Ethereum object doesn't exist!");
+      }
+    } catch (error) {
+      console.log(error)
+    }
+  }
+  /// Auction
+  //Withdraw 
+    const withdrawBid = async () => {
+    try {
+      const { ethereum } = window;
+      
+      if (ethereum) {
+
+      let chainId = await ethereum.request({ method: 'eth_chainId' });
+      console.log("Connected to chain " + chainId);
+      
+      // String, hex code of the chainId of the Rinkebey test network
+      const rinkebyChainId = "0x4"; 
+      if (chainId !== rinkebyChainId) {
+      	alert("You are not connected to the Rinkeby Test Network!");
+      }
+        
+        const provider = new ethers.providers.Web3Provider(ethereum);
+        const signer = provider.getSigner();
+        const connectedContract = new ethers.Contract(Auction_CONTRACT_ADDRESS, SimpleAuction.abi, signer);
+
+
+        let withdrawTxn = await connectedContract.withdraw();
+        console.log("Mining...please wait.")
+        document.getElementById("miningTxt").innerHTML = "...Mining";
+        await withdrawTxn.wait();
+        document.getElementById("miningTxt").innerHTML = "Mined";
+        console.log(`Mined, see transaction: https://rinkeby.etherscan.io/tx/${withdrawTxn.hash}`);          
+      } else {
+        console.log("Ethereum object doesn't exist!");
+      }
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
+  //auction End 
+    const auctionEnd = async () => {
+    try {
+      const { ethereum } = window;
+      
+      if (ethereum) {
+
+      let chainId = await ethereum.request({ method: 'eth_chainId' });
+      console.log("Connected to chain " + chainId);
+      
+      // String, hex code of the chainId of the Rinkebey test network
+      const rinkebyChainId = "0x4"; 
+      if (chainId !== rinkebyChainId) {
+      	alert("You are not connected to the Rinkeby Test Network!");
+      }
+        
+        const provider = new ethers.providers.Web3Provider(ethereum);
+        const signer = provider.getSigner();
+        const connectedContract = new ethers.Contract(Auction_CONTRACT_ADDRESS, SimpleAuction.abi, signer);
+
+        try {
+        let endTxn = await connectedContract.auctionEnd(NFT2_CONTRACT_ADDRESS, 0);
+        console.log("Mining...please wait.")
+        auctionEventListener()
+        document.getElementById("miningTxt").innerHTML = "...Mining";
+        await endTxn.wait();
+        document.getElementById("miningTxt").innerHTML = "Mined";
+        console.log(`Mined, see transaction: https://rinkeby.etherscan.io/tx/${endTxn.hash}`);          }catch(err) {
+          document.getElementById("miningTxt").innerHTML = "";
+        alert(`خطا به یکی از دلایل زیر اتفاق افتاده است:
+* مزایده هنوز به پایان نرسیده است.
+* پایان مزایده قبلاً فراخوانده شده است`)
+        }
+      } else {
+        console.log("Ethereum object doesn't exist!");
+      }
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
   
   useEffect(() => {
     checkIfWalletIsConnected();
@@ -152,6 +316,16 @@ function App() {
     <button onClick={askContractToMintNft} className="cta-button mint-button">
       Mint NFT
     </button>
+  )
+
+  const renderBidUI = () => (
+    <div className="btmPosition">
+      <button onClick={submitBid} className="cta-button mint-button" style={{marginBottom: "20px"}}>ثبت پیشنهاد</button>
+      برداشت پیشنهادهای گذشته(به غیر از بیشترین پیشنهاد):
+      <button onClick={withdrawBid} className="cta-button mint-button" style={{marginBottom: "20px"}}>برداشت</button>
+      این گزینه فقط یک بار و در پایان مزایده برای تخصیص NFT به برنده و انتقال اتر به برگزار کننده میتواند اجرا شود:
+      <button onClick={auctionEnd} className="cta-button mint-button">پایان مزایده</button>
+    </div>
   )
 
   
@@ -187,7 +361,7 @@ function App() {
            </a>
          </li>
          <li><a href="#voteContainer">
-         رأی دادن و ثبت نظر
+         ثبت نظر
           </a>
          </li>
          <div className="rinkebyHelp">
@@ -217,8 +391,7 @@ function App() {
           <div id="openseaTxt"></div>
           <a id='openseaURL'></a>
         </div>
-        <div className="center">
-        </div>
+
         <div className="rightSide">
           <h2><b>یک توکن زامبی ضرب کنید.</b></h2>
           <p>این تصویر زامبی منه که از آموزش <a href="https://cryptozombies.io/"> https://cryptozombies.io </a>
@@ -237,28 +410,37 @@ function App() {
           <h2><b>شانس خود را برای برنده شدن این توکن امتحان کنید.</b></h2>
           <p>به زودی</p>
         </div>
-        <div className="center">
-        </div>
         <div className="leftSide">
-          <img src="./NFT0.PNG" alt="build-space token0" width="300" height="300" />
+          <img src="./myNFT.png" alt="build-space token0" width="300" height="300" />
         </div>
       </div>
 
       <div id="auctionContainer">
         <div className="leftSide">
-          <img src="./NFT0.PNG" alt="build-space token1" width="300" height="300" />
-        </div>
-        <div className="center">
+          <img src="./MyNFT2.png" alt="build-space token1" width="300" height="300" />
         </div>
         <div className="rightSide">
           <h2><b>در حراج توکن روبرو شرکت کنید.</b></h2>
-          <p>به زودی</p>
+          <p>این تصویر NFT توکنی است که من در آموزش  <a href="https://buildspace.so/p/mint-nft-collection"> https://buildspace.so/p/mint-nft-collection </a>
+          دریافت کردم. من از روی اون یک توکن برروی شبکه Rinkeby ساختم و اینجا اونو به مزایده میذارم. 😊
+            </p>
+          <p>تاریخ پایان مزایده:  1401/06/01 ساعت 00:00:00</p>
+          <div id="bidUntilNow"></div>
+          <form action="/action_page.php">
+            <label for="bid">لطفا" پیشنهاد خود را وارد کنید:</label>
+            <input type="number" id="bid" name="bid" step="any"/><br></br> 
+          </form>
+            {currentAccount === "" ? renderNotConnectedContainer() : renderBidUI()}
+          <div id="miningTxt" style={{textAlign: 'center', marginTop:"10px"}}></div>
         </div>
+        
       </div> 
 
       <div id="voteContainer">
-          <h2><b>لطفاً به وبسایت من رأی بدید و نظرتون را بنویسید.</b></h2>
-          <p>به زودی</p>
+        <div>
+          <h2><b>ثبت نظرات</b></h2>
+          <p>لطفا" نظر خودتون را در مورد سایت بنویسید. نظر شما تا همیشه برروی شبکه بلاکچین ثبت میشه.😉</p>
+        </div>
       </div>
 
     </div>
