@@ -2,18 +2,25 @@ import React, { useEffect, useState } from "react";
 import './App.css';
 import MyZombieNFT from "./utils/MyZombieNFT.json";
 import SimpleAuction from "./utils/SimpleAuction.json";
+import commentRegister from "./utils/commentRegister.json";
 import { ethers } from "ethers";
 
 const TOTAL_MINT_COUNT = 100;
 // I moved the contract address to the top for easy access.
 const CONTRACT_ADDRESS = "0x272D90a1EE1FEA9fFeFA8893FFe4B0f335CAdD00";
 const Auction_CONTRACT_ADDRESS = "0x4f2C172f713FFb8ec6D0f8dD27473788b41a34aB";
-const NFT2_CONTRACT_ADDRESS = "0xA91c3369E4700A34c48884603F723Aed207E2906";
+const NFT2_CONTRACT_ADDRESS = "0xCD939a639B88B76A28d7Ca40f99cD04CC2220c04";
+const commentRegister_CONTRACT_ADDRESS = "0x9aD6cf7C4a1D7beb45c174e8b7dFD658B3A50f49";
 
 function App() {
 
   const [currentAccount, setCurrentAccount] = useState("");
-
+  const [highestBid, setHighestBid] = useState("");
+     /*
+   * All state property to store all waves
+   */
+  const [allComments, setAllComments] = useState([]);
+  
   const checkIfWalletIsConnected = async () => {
       const { ethereum } = window;
 
@@ -30,6 +37,8 @@ function App() {
           const account = accounts[0];
           console.log("Found an authorized account:", account);
 					setCurrentAccount(account)
+          auctionEventListener()
+          await getAllComments()
           
           // // Setup listener! This is for the case where a user comes to our site
           // // and ALREADY had their wallet connected + authorized.
@@ -60,7 +69,7 @@ function App() {
       console.log(error)
     }
   }
-
+///******************************************** Zombie Contract ***************************
          // Setup our listener.
   const setupEventListener = async () => {
     try {
@@ -139,7 +148,7 @@ function App() {
       console.log(error)
     }
   }
-
+///******************************************** Auction Contract *************************
   /// Auction 
   const auctionEventListener = async () => {
     try {
@@ -153,19 +162,16 @@ function App() {
         // This will essentially "capture" our event when our contract throws it.
         aucContract.on("HighestBidIncreased", (from, val) => {
           console.log("Highest Bid Increased")
-          document.getElementById("bidUntilNow").innerHTML = " بالاترین پیشنهاد تا کنون "+ethers.utils.formatEther(val) + 'اتر ';
-          alert(`بالاترین قیمت پیشنهادی به ${ethers.utils.formatEther(val)} اتر افزایش یافت .`)
-        }, {once:true});
+          setHighestBid(ethers.utils.formatEther(val))
+        });
          aucContract.off("HighestBidIncreased", (from, val) => {
            console.log("Highest Bid Increased")
-           document.getElementById("bidUntilNow").innerHTML = " بالاترین پیشنهاد تا کنون "+ethers.utils.formatEther(val) + 'اتر ';
-          alert(`بالاترین قیمت پیشنهادی به ${ehters.utils.formatEhter(val)} افزایش یافت.`)
         });
 
          aucContract.on("AuctionEnded", (highestBidder, highestBid) => {
           console.log("Auction Ended")
           document.getElementById("miningTxt").innerHTML =" مزایده با برنده شدن " + highestBidder + " با پیشنهاد " + ethers.utils.formatEther(highestBid) + " اتر پایان یافت."
-        }, {once:true});
+        });
          aucContract.off("AuctionEnded", (highestBidder, highestBid) => {
            console.log("Auction Ended")
           document.getElementById("miningTxt").innerHTML ="مزایده با برنده شدن " + highestBidder + "با پیشنهاد" + ethers.utils.formatEther(highestBid) + "اتر پایان یافت."
@@ -181,7 +187,6 @@ function App() {
   }
 
 
-  
     const submitBid = async () => {
     try {
       const { ethereum } = window;
@@ -300,11 +305,106 @@ function App() {
       console.log(error)
     }
   }
+///******************************* Comment Register Contract ******************************
+const Register = async () => {
+    try {
+      const { ethereum } = window;
 
-  
+      if (ethereum) {
+        const provider = new ethers.providers.Web3Provider(ethereum);
+        const signer = provider.getSigner();
+        const commentRegisterContract = new ethers.Contract(commentRegister_CONTRACT_ADDRESS, commentRegister.abi, signer);
+       
+        let msgTxt = document.getElementById("comment").value;
+        const msgTxn = await commentRegisterContract.register(msgTxt, { gasLimit: 300000 });
+        console.log("Mining...", msgTxn.hash);
+
+        await msgTxn.wait();
+        console.log("Mined -- ", msgTxn.hash);
+        
+      } else {
+        console.log("Ethereum object doesn't exist!");
+      }
+    } catch (error) {
+      console.log(error);
+    }
+}
+
+     /*
+   * Create a method that gets all comments from my contract
+   */
+  const getAllComments = async () => {
+    try {
+      const { ethereum } = window;
+      if (ethereum) {
+        const provider = new ethers.providers.Web3Provider(ethereum);
+        const signer = provider.getSigner();
+        const commentRegisterContract = new ethers.Contract(commentRegister_CONTRACT_ADDRESS, commentRegister.abi, signer);
+
+        const comments = await commentRegisterContract.getAllComments();
+
+        /*
+         * We only need address, timestamp, and message in our UI so let's
+         * pick those out
+         */
+        let commentsCleaned = [];
+        comments.forEach(comment => {
+          commentsCleaned.push({
+            address: comment.user,
+            timestamp: new Date(comment.timestamp * 1000),
+            message: comment.message
+          });
+        });
+
+        /*
+         * Store our data in React State
+         */
+        setAllComments(commentsCleaned);
+      } else {
+        console.log("Ethereum object doesn't exist!")
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+///****************************************************************************************
   useEffect(() => {
     checkIfWalletIsConnected();
   }, [])
+
+    /**
+ * Listen in for emitter comment register events!
+ */
+  useEffect(() => {
+    let commentRegisterContract;
+  
+    const onNewComment = (from, timestamp, message) => {
+      console.log("NewComment", from, timestamp, message);
+      setAllComments(prevState => [
+        ...prevState,
+        {
+          address: from,
+          timestamp: new Date(timestamp * 1000),
+          message: message,
+        },
+      ]);
+    };
+  
+    if (window.ethereum) {
+      const provider = new ethers.providers.Web3Provider(window.ethereum);
+      const signer = provider.getSigner();
+  
+      commentRegisterContract = new ethers.Contract(commentRegister_CONTRACT_ADDRESS, commentRegister.abi, signer);
+      commentRegisterContract.on("NewComment", onNewComment);
+    }
+  
+    return () => {
+      if (commentRegisterContract) {
+        commentRegisterContract.off("NewComment", onNewComment);
+      }
+    };
+  }, []);
 
     const renderNotConnectedContainer = () => (
     <button onClick={connectWallet} className="cta-button connect-wallet-button">
@@ -326,6 +426,14 @@ function App() {
       این گزینه فقط یک بار و در پایان مزایده برای تخصیص NFT به برنده و انتقال اتر به برگزار کننده میتواند اجرا شود:
       <button onClick={auctionEnd} className="cta-button mint-button">پایان مزایده</button>
     </div>
+  )
+
+  const renderCommentInputUI = () => (
+  <div>
+  <label for="comment">ثبت نظر:</label>
+  <input type="text" id="comment" name="comment"/><br></br>
+  <button onClick={Register} className="cta-button mint-button">ثبت</button>
+  </div>
   )
 
   
@@ -425,7 +533,7 @@ function App() {
           دریافت کردم. من از روی اون یک توکن برروی شبکه Rinkeby ساختم و اینجا اونو به مزایده میذارم. 😊
             </p>
           <p>تاریخ پایان مزایده:  1401/06/01 ساعت 00:00:00</p>
-          <div id="bidUntilNow"></div>
+          <div id="bidUntilNow" style={{marginBottom: "10px"}}> بالاترین پیشنهاد تا کنون ${highestBid}   اتر</div>
           <form action="/action_page.php">
             <label for="bid">لطفا" پیشنهاد خود را وارد کنید:</label>
             <input type="number" id="bid" name="bid" step="any"/><br></br> 
@@ -439,7 +547,18 @@ function App() {
       <div id="voteContainer">
         <div>
           <h2><b>ثبت نظرات</b></h2>
-          <p>لطفا" نظر خودتون را در مورد سایت بنویسید. نظر شما تا همیشه برروی شبکه بلاکچین ثبت میشه.😉</p>
+          <p>لطفاً نظر خودتون را در مورد سایت بنویسید. نظر شما تا همیشه برروی شبکه بلاکچین ثبت میشه.😉</p>
+          {currentAccount === "" ? renderNotConnectedContainer() : renderCommentInputUI()}
+          <div className="commentCenter">
+          {allComments.map((comment, index) => {
+            return (
+              <div key={index} style={{marginTop: "10px", padding: "8px", width: "500px", boxShadow: "3px 3px 3px 3px gray"}}>
+                <div>آدرس:  {comment.address}</div>
+                <div>زمان:  {comment.timestamp.toString()}</div>
+                <div>نظر:  {comment.message}</div>
+              </div>)
+          })}
+          </div>
         </div>
       </div>
 

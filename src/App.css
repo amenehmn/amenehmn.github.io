@@ -166,4 +166,10 @@ li {
   padding: 32px;
   direction: rtl;
 /*   font-size: 40px; */
+  flex-direction: column;
+}
+.commentCenter {
+  display: flex;
+  align-items: center;
+  flex-direction: column;
 }
