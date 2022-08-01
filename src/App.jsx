@@ -8,8 +8,8 @@ import { ethers } from "ethers";
 const TOTAL_MINT_COUNT = 100;
 // I moved the contract address to the top for easy access.
 const CONTRACT_ADDRESS = "0x272D90a1EE1FEA9fFeFA8893FFe4B0f335CAdD00";
-const Auction_CONTRACT_ADDRESS = "0x4f2C172f713FFb8ec6D0f8dD27473788b41a34aB";
-const NFT2_CONTRACT_ADDRESS = "0xCD939a639B88B76A28d7Ca40f99cD04CC2220c04";
+const Auction_CONTRACT_ADDRESS = "0x3D82cf5D339e2BfCC2C172E1FD8dd80b5Be0392B";
+const NFT2_CONTRACT_ADDRESS = "0x3A5714142280D2D151c10ca6D0eCAC2A90717A67";
 const commentRegister_CONTRACT_ADDRESS = "0x9aD6cf7C4a1D7beb45c174e8b7dFD658B3A50f49";
 
 function App() {
@@ -160,6 +160,9 @@ function App() {
         const aucContract = new ethers.Contract(Auction_CONTRACT_ADDRESS, SimpleAuction.abi, signer);
 
         // This will essentially "capture" our event when our contract throws it.
+        let highest = await aucContract.highestBid();
+        setHighestBid(ethers.utils.formatEther(highest));
+        
         aucContract.on("HighestBidIncreased", (from, val) => {
           console.log("Highest Bid Increased")
           setHighestBid(ethers.utils.formatEther(val))
@@ -286,7 +289,7 @@ function App() {
         const connectedContract = new ethers.Contract(Auction_CONTRACT_ADDRESS, SimpleAuction.abi, signer);
 
         try {
-        let endTxn = await connectedContract.auctionEnd(NFT2_CONTRACT_ADDRESS, 0);
+        let endTxn = await connectedContract.auctionEnd(NFT2_CONTRACT_ADDRESS, 0, {gasLimit: 300000});
         console.log("Mining...please wait.")
         auctionEventListener()
         document.getElementById("miningTxt").innerHTML = "...Mining";
@@ -430,8 +433,8 @@ const Register = async () => {
 
   const renderCommentInputUI = () => (
   <div>
-  <label for="comment">ثبت نظر:</label>
-  <input type="text" id="comment" name="comment"/><br></br>
+  <label for="comment">ثبت نظر: </label>
+  <input type="text" id="comment" name="comment" style={{width:"500px", height:"50px"}}/><br></br>
   <button onClick={Register} className="cta-button mint-button">ثبت</button>
   </div>
   )
@@ -443,15 +446,15 @@ const Register = async () => {
      <div className="mainContainer">
        
        <div className="title">
-         <img src="./Solidity_logo.svg.png" alt="solidity logo" width="50" height="50" />
-        <img src="./Solidity_logo.svg.png" alt="solidity logo" width="50" height="50" />
-        <img src="./Solidity_logo.svg.png" alt="solidity logo" width="50" height="50" />
-       <img src="./Solidity_logo.svg.png" alt="solidity logo" width="50" height="50" />
+         <img src="https://gateway.pinata.cloud/ipfs/QmdduR3fvv9xFCVKfXCvtFv261fCStUxa2F6epQkLwwMQE" alt="solidity logo" width="50" height="50" />
+        <img src="https://gateway.pinata.cloud/ipfs/QmdduR3fvv9xFCVKfXCvtFv261fCStUxa2F6epQkLwwMQE" alt="solidity logo" width="50" height="50" />
+        <img src="https://gateway.pinata.cloud/ipfs/QmdduR3fvv9xFCVKfXCvtFv261fCStUxa2F6epQkLwwMQE" alt="solidity logo" width="50" height="50" />
+       <img src="https://gateway.pinata.cloud/ipfs/QmdduR3fvv9xFCVKfXCvtFv261fCStUxa2F6epQkLwwMQE" alt="solidity logo" width="50" height="50" />
       <b> نمونه پروژه های سالیدیتی  </b>
-       <img src="./Solidity_logo.svg.png" alt="solidity logo" width="50" height="50" />
-        <img src="./Solidity_logo.svg.png" alt="solidity logo" width="50" height="50" />
-        <img src="./Solidity_logo.svg.png" alt="solidity logo" width="50" height="50" />
-         <img src="./Solidity_logo.svg.png" alt="solidity logo" width="50" height="50" />
+       <img src="https://gateway.pinata.cloud/ipfs/QmdduR3fvv9xFCVKfXCvtFv261fCStUxa2F6epQkLwwMQE" alt="solidity logo" width="50" height="50" />
+        <img src="https://gateway.pinata.cloud/ipfs/QmdduR3fvv9xFCVKfXCvtFv261fCStUxa2F6epQkLwwMQE" alt="solidity logo" width="50" height="50" />
+        <img src="https://gateway.pinata.cloud/ipfs/QmdduR3fvv9xFCVKfXCvtFv261fCStUxa2F6epQkLwwMQE" alt="solidity logo" width="50" height="50" />
+         <img src="https://gateway.pinata.cloud/ipfs/QmdduR3fvv9xFCVKfXCvtFv261fCStUxa2F6epQkLwwMQE" alt="solidity logo" width="50" height="50" />
        </div>
        
        <div className="parag">
@@ -495,7 +498,7 @@ const Register = async () => {
         
         <div id="sellNFT">
         <div className="leftSide">
-          <img src="./NFT0.PNG" alt="Zombie Token" width="300" height="300" />
+          <img src="https://gateway.pinata.cloud/ipfs/QmakyVsBdrio9Cd65B4x6CcNHkv8GhFS2eE6ZwEErro8yM" alt="Zombie Token" width="300" height="300" />
           <div id="openseaTxt"></div>
           <a id='openseaURL'></a>
         </div>
@@ -519,13 +522,13 @@ const Register = async () => {
           <p>به زودی</p>
         </div>
         <div className="leftSide">
-          <img src="./myNFT.png" alt="build-space token0" width="300" height="300" />
+          <img src="https://gateway.pinata.cloud/ipfs/QmXKrXDGoBqgrVD2LGKoFX9yDNZZe9PwhrgBQ5ySSgNBGR" alt="build-space token0" width="300" height="300" />
         </div>
       </div>
 
       <div id="auctionContainer">
         <div className="leftSide">
-          <img src="./MyNFT2.png" alt="build-space token1" width="300" height="300" />
+          <img src="https://gateway.pinata.cloud/ipfs/QmZnKAjhr7MJgE5BemCg15jmZEZSk5Pd2zK17GbGciHS2y" alt="build-space token1" width="300" height="300" />
         </div>
         <div className="rightSide">
           <h2><b>در حراج توکن روبرو شرکت کنید.</b></h2>
@@ -535,7 +538,7 @@ const Register = async () => {
           <p>تاریخ پایان مزایده:  1401/06/01 ساعت 00:00:00</p>
           <div id="bidUntilNow" style={{marginBottom: "10px"}}> بالاترین پیشنهاد تا کنون ${highestBid}   اتر</div>
           <form action="/action_page.php">
-            <label for="bid">لطفا" پیشنهاد خود را وارد کنید:</label>
+          <label for="bid">لطفاً پیشنهاد خود را وارد کنید:</label>
             <input type="number" id="bid" name="bid" step="any"/><br></br> 
           </form>
             {currentAccount === "" ? renderNotConnectedContainer() : renderBidUI()}
