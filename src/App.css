@@ -130,6 +130,14 @@ li {
   .leftSide {
     padding: 0px;
   }
+  .rightSide{
+    padding: 0px;
+    text-align: justify;
+  }
+  #comment{
+    width: 150px;
+    height: 100px;
+  }
 }
 
 .mintContainer {
@@ -168,8 +176,15 @@ li {
 /*   font-size: 40px; */
   flex-direction: column;
 }
+
+.comment{
+    width: 500px;
+    height: 50px;
+  }
+
 .commentCenter {
   display: flex;
   align-items: center;
   flex-direction: column;
 }
+

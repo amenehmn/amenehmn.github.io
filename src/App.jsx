@@ -434,7 +434,7 @@ const Register = async () => {
   const renderCommentInputUI = () => (
   <div>
   <label for="comment">ثبت نظر: </label>
-  <input type="text" id="comment" name="comment" style={{width:"500px", height:"50px"}}/><br></br>
+  <input type="text" id="comment" className="comment"/><br></br>
   <button onClick={Register} className="cta-button mint-button">ثبت</button>
   </div>
   )
@@ -555,7 +555,7 @@ const Register = async () => {
           <div className="commentCenter">
           {allComments.map((comment, index) => {
             return (
-              <div key={index} style={{marginTop: "10px", padding: "8px", width: "500px", boxShadow: "3px 3px 3px 3px gray"}}>
+              <div className="commentBox" key={index} style={{marginTop: "10px", padding: "8px", width: "500px", boxShadow: "3px 3px 3px 3px gray"}}>
                 <div>آدرس:  {comment.address}</div>
                 <div>زمان:  {comment.timestamp.toString()}</div>
                 <div>نظر:  {comment.message}</div>
