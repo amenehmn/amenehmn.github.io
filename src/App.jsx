@@ -3,14 +3,17 @@ import './App.css';
 import MyZombieNFT from "./utils/MyZombieNFT.json";
 import SimpleAuction from "./utils/SimpleAuction.json";
 import commentRegister from "./utils/commentRegister.json";
+import NFTVRFChance from "./utils/NFTVRFChance.json"
 import { ethers } from "ethers";
 
 const TOTAL_MINT_COUNT = 100;
 // I moved the contract address to the top for easy access.
-const CONTRACT_ADDRESS = "0x272D90a1EE1FEA9fFeFA8893FFe4B0f335CAdD00";
+const CONTRACT_ADDRESS = "0xaEe925ad5147d707216CC76c4D240Fd697c83186";
 const Auction_CONTRACT_ADDRESS = "0x3D82cf5D339e2BfCC2C172E1FD8dd80b5Be0392B";
 const NFT2_CONTRACT_ADDRESS = "0x3A5714142280D2D151c10ca6D0eCAC2A90717A67";
 const commentRegister_CONTRACT_ADDRESS = "0x9aD6cf7C4a1D7beb45c174e8b7dFD658B3A50f49";
+const Chance_CONTRACT_ADDRESS = "0xeb5304bE927861012dd8CdC6FE2EFBF27673a3EB";
+const NFT1_CONTRACT_ADDRESS = "0xFA7982eB0aD95525d917146682D23E49A2e85756";
 
 function App() {
 
@@ -20,6 +23,7 @@ function App() {
    * All state property to store all waves
    */
   const [allComments, setAllComments] = useState([]);
+  const [winStatus, setWinStatus] = useState(false);
   
   const checkIfWalletIsConnected = async () => {
       const { ethereum } = window;
@@ -38,6 +42,7 @@ function App() {
           console.log("Found an authorized account:", account);
 					setCurrentAccount(account)
           auctionEventListener()
+          chanceEventListener()
           await getAllComments()
           
           // // Setup listener! This is for the case where a user comes to our site
@@ -148,6 +153,139 @@ function App() {
       console.log(error)
     }
   }
+///******************************************** Chance Contract *************************
+///chanceEventListener
+    const chanceEventListener = async () => {
+    try {
+      const { ethereum } = window;
+
+      if (ethereum) {
+        const provider = new ethers.providers.Web3Provider(ethereum);
+        const signer = provider.getSigner();
+        const chanceContract = new ethers.Contract(Chance_CONTRACT_ADDRESS, NFTVRFChance.abi, signer);
+
+
+        chanceContract.on("DiceRolled", (requestId, roller) => {
+          console.log("Dice Rolled")
+          document.getElementById("chanceMiningTxt").innerHTML = "درخواست شما به chainlink فرستاده شد requestId: "+requestId+ " لطفاً تا ماین شدن تراکنش ریزالت از طرف چین لینک صبر کنید.";
+        });
+          chanceContract.off("DiceRolled", (requestId, roller) => {
+          console.log("Dice Rolled")
+        });
+
+         chanceContract.on("DiceLanded", (requestId, result) => {
+          console.log("Dice Landed")
+           while (result.length < result) result = "0" + result;
+           document.getElementById("chanceMiningTxt").innerHTML =  "شانس شما: "+ result;
+           if (result < 10){
+             setWinStatus(true);
+             alert('تبریک! شما برنده شدید. برای انتقال NFT به آدرس خودتون روی دکمه دریافت کلیک کنید.')
+           }else {
+             alert(' !متاسفم شما برنده نشدید '+ result)
+           }
+        });
+        chanceContract.off("DiceLanded", (requestId, result) => {
+          console.log("Dice Landed")
+        });
+
+        chanceContract.on("TokenTransfered", (yourAddr, NFTAddr) => {
+          console.log("token is transfered")
+           document.getElementById("chanceMiningTxt").innerHTML =  "توکن به آدرس شما منتقل شد.";
+        });
+        chanceContract.off("TokenTransfered", (yourAddr, NFTAddr) => {
+          console.log("token is transfered")
+        });
+        console.log("Setup event listener!")
+
+      } else {
+        console.log("Ethereum object doesn't exist!");
+      }  
+    } catch (error) {
+      console.log(error)
+    }
+  }
+/// rollDice function
+  const getChance = async () => {
+    try {
+      const { ethereum } = window;
+      
+      if (ethereum) {
+
+      let chainId = await ethereum.request({ method: 'eth_chainId' });
+      console.log("Connected to chain " + chainId);
+      
+      // String, hex code of the chainId of the Rinkebey test network
+      const rinkebyChainId = "0x4"; 
+      if (chainId !== rinkebyChainId) {
+      	alert("You are not connected to the Rinkeby Test Network!");
+      }
+        
+        const provider = new ethers.providers.Web3Provider(ethereum);
+        const signer = provider.getSigner();
+        const chanceContract = new ethers.Contract(Chance_CONTRACT_ADDRESS, NFTVRFChance.abi, signer);
+
+        try{
+        let rollTxn = await chanceContract.rollDice(signer.address, {gasLimit: 300000 });
+        console.log("Mining...please wait.")
+        document.getElementById("chanceMiningTxt").innerHTML = "...Mining";
+        await rollTxn.wait();
+        chanceEventListener()
+        // document.getElementById("miningTxt").innerHTML = "Mined.";
+        console.log(`Mined, see transaction: https://rinkeby.etherscan.io/tx/${rollTxn.hash}`); 
+
+        } catch(err) {
+        document.getElementById("chanceMiningTxt").innerHTML = "";
+        alert(`شما قبلاً شانستون را امتحان کرده اید.`)
+        }
+      } else {
+        console.log("Ethereum object doesn't exist!");
+      }
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
+  /// win function
+  const winFunc = async () => {
+    try {
+      const { ethereum } = window;
+      
+      if (ethereum) {
+
+      let chainId = await ethereum.request({ method: 'eth_chainId' });
+      console.log("Connected to chain " + chainId);
+      
+      // String, hex code of the chainId of the Rinkebey test network
+      const rinkebyChainId = "0x4"; 
+      if (chainId !== rinkebyChainId) {
+      	alert("You are not connected to the Rinkeby Test Network!");
+      }
+        
+        const provider = new ethers.providers.Web3Provider(ethereum);
+        const signer = provider.getSigner();
+        const chanceContract = new ethers.Contract(Chance_CONTRACT_ADDRESS, NFTVRFChance.abi, signer);
+
+        try{
+        let winTxn = await chanceContract.win_nft(signer.address, NFT1_CONTRACT_ADDRESS, 0, {gasLimit: 300000 });
+        console.log("Mining...please wait.")
+        document.getElementById("chanceMiningTxt").innerHTML = "...Mining";
+        await winTxn.wait();
+        chanceEventListener()
+        // document.getElementById("miningTxt").innerHTML = "Mined.";
+        console.log(`Mined, see transaction: https://rinkeby.etherscan.io/tx/${winTxn.hash}`); 
+
+        } catch(err) {
+        document.getElementById("chanceMiningTxt").innerHTML = "";
+        alert(`برای دیدن علت خطا به آدرس تراکنش در لینک زیر مراجعه کنید:  see transaction: https://rinkeby.etherscan.io/tx/${winTxn.hash}`)
+        }
+      } else {
+        console.log("Ethereum object doesn't exist!");
+      }
+    } catch (error) {
+      console.log(error)
+    }
+  }
+  
 ///******************************************** Auction Contract *************************
   /// Auction 
   const auctionEventListener = async () => {
@@ -421,6 +559,18 @@ const Register = async () => {
     </button>
   )
 
+  const renderChanceUI = () => (
+    <button onClick={getChance} className="cta-button mint-button">
+      Luck button
+    </button>
+  )
+
+  const renderWinUI = () => (
+    <button onClick={winFunc} className="cta-button mint-button">
+      Receive
+    </button>
+  )
+  
   const renderBidUI = () => (
     <div className="btmPosition">
       <button onClick={submitBid} className="cta-button mint-button" style={{marginBottom: "20px"}}>ثبت پیشنهاد</button>
@@ -519,7 +669,12 @@ const Register = async () => {
       <div id="randGeneratorContainer">
         <div className="rightSide">
           <h2><b>شانس خود را برای برنده شدن این توکن امتحان کنید.</b></h2>
-          <p>به زودی</p>
+          <p>شما میتونید با فشار دادن دکمه زیر یه عدد رندوم از ChainlinkVRF دریافت کنید. اگر این عدد با دو صفر شروع بشه شما برنده میشید و میتونید از دکمه  دریافت (که بعد از برنده شده ظاهر میشه!) NFT را به والت خودتون منتقل کنید.</p>
+          <div className="btmPosition">
+          {currentAccount === "" ? renderNotConnectedContainer() : renderChanceUI()}
+          <div id="chanceMiningTxt" style={{textAlign: 'center', marginTop:"10px"}}></div>
+          {winStatus === false ? <div></div> : renderWinUI()}
+            </div>
         </div>
         <div className="leftSide">
           <img src="https://gateway.pinata.cloud/ipfs/QmXKrXDGoBqgrVD2LGKoFX9yDNZZe9PwhrgBQ5ySSgNBGR" alt="build-space token0" width="300" height="300" />
