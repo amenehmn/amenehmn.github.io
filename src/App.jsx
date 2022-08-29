@@ -12,8 +12,8 @@ const CONTRACT_ADDRESS = "0xaEe925ad5147d707216CC76c4D240Fd697c83186";
 const Auction_CONTRACT_ADDRESS = "0x3D82cf5D339e2BfCC2C172E1FD8dd80b5Be0392B";
 const NFT2_CONTRACT_ADDRESS = "0x3A5714142280D2D151c10ca6D0eCAC2A90717A67";
 const commentRegister_CONTRACT_ADDRESS = "0x9aD6cf7C4a1D7beb45c174e8b7dFD658B3A50f49";
-const Chance_CONTRACT_ADDRESS = "0xeb5304bE927861012dd8CdC6FE2EFBF27673a3EB";
-const NFT1_CONTRACT_ADDRESS = "0xFA7982eB0aD95525d917146682D23E49A2e85756";
+const Chance_CONTRACT_ADDRESS = "0x4a331A4cA83D90F93F6F98DFFb88cCc63f28Ad7F";
+const NFT1_CONTRACT_ADDRESS = "0xA6f8106aB57D2F9982947a045cd1A62F2b211256";
 
 function App() {
 
@@ -153,7 +153,7 @@ function App() {
       console.log(error)
     }
   }
-///******************************************** Chance Contract *************************
+///**************************************** Chance Contract *************************
 ///chanceEventListener
     const chanceEventListener = async () => {
     try {
@@ -175,14 +175,13 @@ function App() {
 
          chanceContract.on("DiceLanded", (requestId, result) => {
           console.log("Dice Landed")
-           while (result.length < result) result = "0" + result;
-           document.getElementById("chanceMiningTxt").innerHTML =  "شانس شما: "+ result;
            if (result < 10){
              setWinStatus(true);
              alert('تبریک! شما برنده شدید. برای انتقال NFT به آدرس خودتون روی دکمه دریافت کلیک کنید.')
            }else {
              alert(' !متاسفم شما برنده نشدید '+ result)
            }
+          document.getElementById("chanceMiningTxt").innerHTML = 'شانس شما: ' + result.toString().padStart(3, '0');
         });
         chanceContract.off("DiceLanded", (requestId, result) => {
           console.log("Dice Landed")
@@ -225,8 +224,9 @@ function App() {
         const chanceContract = new ethers.Contract(Chance_CONTRACT_ADDRESS, NFTVRFChance.abi, signer);
 
         try{
-        let rollTxn = await chanceContract.rollDice(signer.address, {gasLimit: 300000 });
-        console.log("Mining...please wait.")
+        let addr = signer.getAddress( )
+        var rollTxn = await chanceContract.rollDice(addr, {gasLimit: 300000 });
+        console.log(`Mining, see transaction: https://rinkeby.etherscan.io/tx/${rollTxn.hash}`);
         document.getElementById("chanceMiningTxt").innerHTML = "...Mining";
         await rollTxn.wait();
         chanceEventListener()
@@ -235,7 +235,9 @@ function App() {
 
         } catch(err) {
         document.getElementById("chanceMiningTxt").innerHTML = "";
-        alert(`شما قبلاً شانستون را امتحان کرده اید.`)
+        if (rollTxn.hash){
+        alert(`برای دیدن علت خطا به آدرس تراکنش در لینک زیر مراجعه کنید:  see transaction: https://rinkeby.etherscan.io/tx/${rollTxn.hash}`)
+        }
         }
       } else {
         console.log("Ethereum object doesn't exist!");
@@ -266,7 +268,8 @@ function App() {
         const chanceContract = new ethers.Contract(Chance_CONTRACT_ADDRESS, NFTVRFChance.abi, signer);
 
         try{
-        let winTxn = await chanceContract.win_nft(signer.address, NFT1_CONTRACT_ADDRESS, 0, {gasLimit: 300000 });
+        let addr = signer.getAddress( )
+        let winTxn = await chanceContract.win_nft(addr, NFT1_CONTRACT_ADDRESS, "0", {gasLimit: 300000 });
         console.log("Mining...please wait.")
         document.getElementById("chanceMiningTxt").innerHTML = "...Mining";
         await winTxn.wait();
@@ -276,7 +279,9 @@ function App() {
 
         } catch(err) {
         document.getElementById("chanceMiningTxt").innerHTML = "";
+        if (winTxn.hash){
         alert(`برای دیدن علت خطا به آدرس تراکنش در لینک زیر مراجعه کنید:  see transaction: https://rinkeby.etherscan.io/tx/${winTxn.hash}`)
+        }
         }
       } else {
         console.log("Ethereum object doesn't exist!");
