@@ -167,7 +167,7 @@ function App() {
 
         chanceContract.on("DiceRolled", (requestId, roller) => {
           console.log("Dice Rolled")
-          document.getElementById("chanceMiningTxt").innerHTML = "درخواست شما به chainlink فرستاده شد requestId: "+requestId+ " لطفاً تا ماین شدن تراکنش ریزالت از طرف چین لینک صبر کنید.";
+          document.getElementById("chanceMiningTxt").innerHTML = "Your request has been sent to the ChainLink, requestId: "+requestId+ " Please wait for the ChainLink comeback transaction";
         });
           chanceContract.off("DiceRolled", (requestId, roller) => {
           console.log("Dice Rolled")
@@ -177,11 +177,11 @@ function App() {
           console.log("Dice Landed")
            if (result < 10){
              setWinStatus(true);
-             alert('تبریک! شما برنده شدید. برای انتقال NFT به آدرس خودتون روی دکمه دریافت کلیک کنید.')
+             alert('Congratulations! You Won. Press the receive button to transfer this NFT to your wallet.')
            }else {
-             alert(' !متاسفم شما برنده نشدید '+ result)
+             alert('Sorry, You did\'nt win. '+ result)
            }
-          document.getElementById("chanceMiningTxt").innerHTML = 'شانس شما: ' + result.toString().padStart(3, '0');
+          document.getElementById("chanceMiningTxt").innerHTML = 'Your Chance ' + result.toString().padStart(3, '0');
         });
         chanceContract.off("DiceLanded", (requestId, result) => {
           console.log("Dice Landed")
@@ -189,7 +189,7 @@ function App() {
 
         chanceContract.on("TokenTransfered", (yourAddr, NFTAddr) => {
           console.log("token is transfered")
-           document.getElementById("chanceMiningTxt").innerHTML =  "توکن به آدرس شما منتقل شد.";
+           document.getElementById("chanceMiningTxt").innerHTML =  "The Token has been transferred to your address.";
         });
         chanceContract.off("TokenTransfered", (yourAddr, NFTAddr) => {
           console.log("token is transfered")
@@ -236,7 +236,7 @@ function App() {
         } catch(err) {
         document.getElementById("chanceMiningTxt").innerHTML = "";
         if (rollTxn.hash){
-        alert(`برای دیدن علت خطا به آدرس تراکنش در لینک زیر مراجعه کنید:  see transaction: https://rinkeby.etherscan.io/tx/${rollTxn.hash}`)
+        alert(`Go to the transaction link to see the reason for the error: https://rinkeby.etherscan.io/tx/${rollTxn.hash}`)
         }
         }
       } else {
@@ -280,7 +280,7 @@ function App() {
         } catch(err) {
         document.getElementById("chanceMiningTxt").innerHTML = "";
         if (winTxn.hash){
-        alert(`برای دیدن علت خطا به آدرس تراکنش در لینک زیر مراجعه کنید:  see transaction: https://rinkeby.etherscan.io/tx/${winTxn.hash}`)
+        alert(`Go to the transaction link to see the reason for the error: https://rinkeby.etherscan.io/tx/${winTxn.hash}`)
         }
         }
       } else {
@@ -316,11 +316,11 @@ function App() {
 
          aucContract.on("AuctionEnded", (highestBidder, highestBid) => {
           console.log("Auction Ended")
-          document.getElementById("miningTxt").innerHTML =" مزایده با برنده شدن " + highestBidder + " با پیشنهاد " + ethers.utils.formatEther(highestBid) + " اتر پایان یافت."
+          document.getElementById("miningTxt").innerHTML =" The auction ended with winning:" + highestBidder + "  and the highest bid:  " + ethers.utils.formatEther(highestBid)
         });
          aucContract.off("AuctionEnded", (highestBidder, highestBid) => {
            console.log("Auction Ended")
-          document.getElementById("miningTxt").innerHTML ="مزایده با برنده شدن " + highestBidder + "با پیشنهاد" + ethers.utils.formatEther(highestBid) + "اتر پایان یافت."
+          document.getElementById("miningTxt").innerHTML =" The auction ended with winning:" + highestBidder + "  and the highest bid:  " + ethers.utils.formatEther(highestBid)
         });
         console.log("Setup event listener!")
 
@@ -363,11 +363,10 @@ function App() {
 
         } catch(err) {
         document.getElementById("miningTxt").innerHTML = "";
-        alert(`خطا به یکی از دلایل زیر اتفاق افتاده است:
-* پیشنهاد به اندازه کافی بالا نیست.
-* مزایده قبلاً به پایان رسیده است.
-* هیچ مقداری وارد نکرده اید.`)
+        if (bidTxn.hash){
+        alert(`Go to the transaction link to see the reason for the error: https://rinkeby.etherscan.io/tx/${bidTxn.hash}`)
         }
+      }
       } else {
         console.log("Ethereum object doesn't exist!");
       }
@@ -439,11 +438,11 @@ function App() {
         await endTxn.wait();
         document.getElementById("miningTxt").innerHTML = "Mined";
         console.log(`Mined, see transaction: https://rinkeby.etherscan.io/tx/${endTxn.hash}`);          }catch(err) {
-          document.getElementById("miningTxt").innerHTML = "";
-        alert(`خطا به یکی از دلایل زیر اتفاق افتاده است:
-* مزایده هنوز به پایان نرسیده است.
-* پایان مزایده قبلاً فراخوانده شده است`)
+        document.getElementById("miningTxt").innerHTML = "";
+        if (endTxn.hash){
+        alert(`Go to the transaction link to see the reason for the error: https://rinkeby.etherscan.io/tx/${endTxn.hash}`)
         }
+      }
       } else {
         console.log("Ethereum object doesn't exist!");
       }
@@ -578,19 +577,19 @@ const Register = async () => {
   
   const renderBidUI = () => (
     <div className="btmPosition">
-      <button onClick={submitBid} className="cta-button mint-button" style={{marginBottom: "20px"}}>ثبت پیشنهاد</button>
-      برداشت پیشنهادهای گذشته(به غیر از بیشترین پیشنهاد):
-      <button onClick={withdrawBid} className="cta-button mint-button" style={{marginBottom: "20px"}}>برداشت</button>
-      این گزینه فقط یک بار و در پایان مزایده برای تخصیص NFT به برنده و انتقال اتر به برگزار کننده میتواند اجرا شود:
-      <button onClick={auctionEnd} className="cta-button mint-button">پایان مزایده</button>
+      <button onClick={submitBid} className="cta-button mint-button" style={{marginBottom: "20px"}}>Bid Register</button>
+      Withdraw the past bids(except of the highest bid)
+      <button onClick={withdrawBid} className="cta-button mint-button" style={{marginBottom: "20px"}}>withdraw</button>
+     This option can be used only once at the end of the auction to assign NFT to the winner and also transfer ETH to the organizer.
+      <button onClick={auctionEnd} className="cta-button mint-button">END</button>
     </div>
   )
 
   const renderCommentInputUI = () => (
   <div>
-  <label for="comment">ثبت نظر: </label>
+  <label for="comment">Your comment: </label>
   <input type="text" id="comment" className="comment"/><br></br>
-  <button onClick={Register} className="cta-button mint-button">ثبت</button>
+  <button onClick={Register} className="cta-button mint-button">Register</button>
   </div>
   )
 
@@ -605,7 +604,7 @@ const Register = async () => {
         <img src="https://gateway.pinata.cloud/ipfs/QmdduR3fvv9xFCVKfXCvtFv261fCStUxa2F6epQkLwwMQE" alt="solidity logo" width="50" height="50" />
         <img src="https://gateway.pinata.cloud/ipfs/QmdduR3fvv9xFCVKfXCvtFv261fCStUxa2F6epQkLwwMQE" alt="solidity logo" width="50" height="50" />
        <img src="https://gateway.pinata.cloud/ipfs/QmdduR3fvv9xFCVKfXCvtFv261fCStUxa2F6epQkLwwMQE" alt="solidity logo" width="50" height="50" />
-      <b> نمونه پروژه های سالیدیتی  </b>
+      <b> Solidity Projects </b>
        <img src="https://gateway.pinata.cloud/ipfs/QmdduR3fvv9xFCVKfXCvtFv261fCStUxa2F6epQkLwwMQE" alt="solidity logo" width="50" height="50" />
         <img src="https://gateway.pinata.cloud/ipfs/QmdduR3fvv9xFCVKfXCvtFv261fCStUxa2F6epQkLwwMQE" alt="solidity logo" width="50" height="50" />
         <img src="https://gateway.pinata.cloud/ipfs/QmdduR3fvv9xFCVKfXCvtFv261fCStUxa2F6epQkLwwMQE" alt="solidity logo" width="50" height="50" />
@@ -614,35 +613,32 @@ const Register = async () => {
        
        <div className="parag">
        <ul className="mainParagraph" dir="rtl">
-         این یک وبسایت Web3 شامل چند قرارداد هوشمند به زبان برنامه نویسی سالیدیتی است. قراردادها به شرح زیر هستند:
+         This is a Web3 Site that Contains Several Solidity Smart Contracts:
          <li>
-          <a href="#sellNFT">ضرب کردن یک توکن زامبی(NFT Token)</a>
+          <a href="#sellNFT">Mint a Zombie Token (NFT Token)</a>
           </li>
          <li><a href="#randGeneratorContainer">
-         تولید عدد رندوم (با استفاده از Chainlink) برای برنده شدن یک توکن NFT
+         Generate a random number by ChainlinkVRF to win NFT
            </a>
          </li>
          <li><a href="#auctionContainer">
-         حراج یک توکن NFT
+         Participate in the NFT auction
            </a>
          </li>
          <li><a href="#voteContainer">
-         ثبت نظر
+         Register your comment
           </a>
          </li>
          <div className="rinkebyHelp">
-           <h2>توجه!</h2>
-           <p>تمامی قراردادهای هوشمند در این وبسایت، برروی شبکه تست Rinkeby مستقر هستند. برای تعامل با این اپلیکیشن ها لازم است:</p>
+           <h2>Note</h2>
+           <p>All smart contracts on this site are deployed on the Rinkeby Testnet. To interact with these you need:</p>
            <ol>
              <li>
-                بعد از اتصال به کیف پول متامسک، شبکه را برروی Rinkeby Test Network تنظیم فرمایید.
+                After connecting to the MetaMask wallet, set the network to Rinkeby Test Network.
              </li>
              <li>
-               اتریوم جعلی (fake ETH) داشته باشید.
-              برای دریافت اتریوم جعلی ابتدا می بایست کیف پول خود را به سایت   
-               <a target="_blank" rel="noreferrer" class="chakra-link css-t3sbfb" href="https://app.mycrypto.com/faucet?utm_source=buildspace.so&amp;utm_medium=buildspace_project"> https://app.mycrypto.com/faucet </a>
-               متصل فرمایید و یک حساب کاربری ایجاد کنید و بعد از آن دوباره روی همین پیوند کلیک کنید تا  وجه درخواست کنید.
-              
+              Having some fake ETH (To get fake ETH, first you need to connect your MetaMask Wallet to site
+               <a target="_blank" rel="noreferrer" class="chakra-link css-t3sbfb" href="https://app.mycrypto.com/faucet?utm_source=buildspace.so&amp;utm_medium=buildspace_project"> https://app.mycrypto.com/faucet </a> and create an account there. Then click the same link again and ask for money.)   
              </li>
           </ol>
          </div>
@@ -659,22 +655,20 @@ const Register = async () => {
         </div>
 
         <div className="rightSide">
-          <h2><b>یک توکن زامبی ضرب کنید.</b></h2>
-          <p>این تصویر زامبی منه که از آموزش <a href="https://cryptozombies.io/"> https://cryptozombies.io </a>
-          گرفتم و اونو تبدیل به NFT کردم. شما میتونید با فشار دادن دکمه زیر یه نسخه از اون را ضرب کنید. بعدش اون در والتتون قرار میگیره. لینکی که زیر عکس ظاهر میشه NFT شما را برروی سایت OpenSea نشون میده.(البته همه اینا روی تست نت هست. 😉)
+          <h2><b>Mint a Zombie Token</b></h2>
+          <p>This is my zombie that I got from tutorial <a href="https://cryptozombies.io/"> https://cryptozombies.io </a>
+        and converted to an NFT. You can mint a copy of it by pressing the button below. Then it will place in your wallet. The link that will appear below the image shows your NFT on OpenSea.
             </p>
           <div className="btmPosition">
           {currentAccount === "" ? renderNotConnectedContainer() : renderMintUI()}
             </div>
-          <h3>توجه!</h3>
-          <p>اگر تصویر بر روی سایت OpenSea نمایش داده نشد، تقصیر اون سایت هست🤷‍♀️ من از شما میخوام چند دقیقه منتظر بمونید، اگر بازم ظاهر نشد، من از طرف اونا از شما عذرخواهی میکنم.😄 </p>
         </div>
       </div> 
 
       <div id="randGeneratorContainer">
         <div className="rightSide">
-          <h2><b>شانس خود را برای برنده شدن این توکن امتحان کنید.</b></h2>
-          <p>شما میتونید با فشار دادن دکمه زیر یه عدد رندوم از ChainlinkVRF دریافت کنید. اگر این عدد با دو صفر شروع بشه شما برنده میشید و میتونید از دکمه  دریافت (که بعد از برنده شده ظاهر میشه!) NFT را به والت خودتون منتقل کنید.</p>
+          <h2><b>Try your Chance</b></h2>
+          <p>You can get a random number from Chainlink VRF by pressing the button below. If this number starts with 2 zeros then you are won, and you can get this NFT by pressing the receive button (that will appear after you win)</p>
           <div className="btmPosition">
           {currentAccount === "" ? renderNotConnectedContainer() : renderChanceUI()}
           <div id="chanceMiningTxt" style={{textAlign: 'center', marginTop:"10px"}}></div>
@@ -691,14 +685,14 @@ const Register = async () => {
           <img src="https://gateway.pinata.cloud/ipfs/QmZnKAjhr7MJgE5BemCg15jmZEZSk5Pd2zK17GbGciHS2y" alt="build-space token1" width="300" height="300" />
         </div>
         <div className="rightSide">
-          <h2><b>در حراج توکن روبرو شرکت کنید.</b></h2>
-          <p>این تصویر NFT توکنی است که من در آموزش  <a href="https://buildspace.so/p/mint-nft-collection"> https://buildspace.so/p/mint-nft-collection </a>
-          دریافت کردم. من از روی اون یک توکن برروی شبکه Rinkeby ساختم و اینجا اونو به مزایده میذارم. 😊
+          <h2><b>Participate in this NFT Auction</b></h2>
+          <p>This is a picture of my NFT that I got from tutorial  <a href="https://buildspace.so/p/mint-nft-collection"> https://buildspace.so/p/mint-nft-collection </a>
+           . I made an NFT token out of it on the Rinkeby testnet and am putting it up for auction here. 😊
             </p>
-          <p>تاریخ پایان مزایده:  1401/06/01 ساعت 00:00:00</p>
-          <div id="bidUntilNow" style={{marginBottom: "10px"}}> بالاترین پیشنهاد تا کنون ${highestBid}   اتر</div>
+          <p>The end of the auction: 23/5/2022  00:00 </p>
+          <div id="bidUntilNow" style={{marginBottom: "10px"}}> Highest bid ever: ${highestBid}   ETH</div>
           <form action="/action_page.php">
-          <label for="bid">لطفاً پیشنهاد خود را وارد کنید:</label>
+          <label for="bid">Please enter your bid: </label>
             <input type="number" id="bid" name="bid" step="any"/><br></br> 
           </form>
             {currentAccount === "" ? renderNotConnectedContainer() : renderBidUI()}
@@ -709,16 +703,16 @@ const Register = async () => {
 
       <div id="voteContainer">
         <div>
-          <h2><b>ثبت نظرات</b></h2>
-          <p>لطفاً نظر خودتون را در مورد سایت بنویسید. نظر شما تا همیشه برروی شبکه بلاکچین ثبت میشه.😉</p>
+          <h2><b>Comments</b></h2>
+          <p>Please register your comment. Your comment will be registered on the blockchain forever.😉</p>
           {currentAccount === "" ? renderNotConnectedContainer() : renderCommentInputUI()}
           <div className="commentCenter">
           {allComments.map((comment, index) => {
             return (
               <div className="commentBox" key={index} style={{marginTop: "10px", padding: "8px", width: "500px", boxShadow: "3px 3px 3px 3px gray"}}>
-                <div>آدرس:  {comment.address}</div>
-                <div>زمان:  {comment.timestamp.toString()}</div>
-                <div>نظر:  {comment.message}</div>
+                <div>address:  {comment.address}</div>
+                <div>timestamp:  {comment.timestamp.toString()}</div>
+                <div>comment:  {comment.message}</div>
               </div>)
           })}
           </div>
